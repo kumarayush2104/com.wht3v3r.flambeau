@@ -4,6 +4,7 @@
     package="com.wht3v3r.flambeau"
     >
     <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="true"/>
+    <uses-feature android:name="android.hardware.sensor.proximity" android:required="true" />
     <uses-feature android:name="android.hardware.camera.flash" android:required="true" />
     <application
         android:allowBackup="true"
