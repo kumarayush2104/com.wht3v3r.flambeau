@@ -8,12 +8,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.hardware.SensorManager
 import android.hardware.camera2.CameraManager
-import android.util.Log
 import android.view.View
 import android.widget.RadioButton
-import android.widget.RadioGroup
 import android.widget.TextView
-import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
     private var lightsensor: Sensor ?= null
