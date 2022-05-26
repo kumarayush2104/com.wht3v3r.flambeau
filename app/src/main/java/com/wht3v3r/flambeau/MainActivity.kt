@@ -8,10 +8,12 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.hardware.SensorManager
 import android.hardware.camera2.CameraManager
+import android.util.Log
 import android.view.View
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
+import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
     private var lightsensor: Sensor ?= null
@@ -22,6 +24,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     var sm: SensorManager ?= null
     private var proxsensor: Sensor ?= null
     var sens: Int = 5
+    var proximity: Float ?= null
+    var light: Float ?= null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -30,7 +34,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         detail = findViewById(R.id.textview)
         detail1 = findViewById(R.id.textview1)
         cm = getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        camera = cm!!.cameraIdList[0]
+        camera = cm!!.cameraIdList[0] as String
         proxsensor = sm!!.getDefaultSensor(Sensor.TYPE_PROXIMITY)
     }
 
@@ -43,10 +47,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     sens = 5
                 }
                 R.id.medcheck -> if (checked) {
-                    sens = 12
+                    sens = 11
                 }
                 R.id.highcheck -> if (checked) {
-                    sens = 18
+                    sens = 16
                 }
             }
         }
@@ -54,21 +58,26 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onSensorChanged(event: SensorEvent?) {
         var type = event!!.sensor
-        var light: Float = 90F
-        var proximity: Float  = 10F
+
         if ( type.type == Sensor.TYPE_PROXIMITY) {
+            detail1!!.setText("Proximity Sensor: " + event.values[0].toString())
             proximity = event.values[0]
-            detail1!!.setText("Proximity Sensor: " + proximity.toString())
-        } else if (type.type == Sensor.TYPE_LIGHT) {
-            light  = event.values[0]
-            detail!!.setText("Light Sensor: " + light.toString())
+        }
+        if (type.type == Sensor.TYPE_LIGHT) {
+            detail!!.setText("Light Sensor: " + event.values[0].toString())
+            light = event.values[0]
         }
 
-        if (light < sens && proximity > 4.5) {
-            cm!!.setTorchMode(camera.toString(), true)
+        if(proximity == proxsensor!!.maximumRange) {
+            if(light!! < sens) {
+                cm!!.setTorchMode(camera!!, true)
+            } else {
+                cm!!.setTorchMode(camera!!, false)
+            }
         } else {
-            cm!!.setTorchMode(camera.toString(), false)
+            cm!!.setTorchMode(camera!!, false)
         }
+
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
