@@ -15,7 +15,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.45" />
+        app:layout_constraintVertical_bias="0.4" />
     <TextView
         android:id="@+id/textview1"
         android:layout_width="wrap_content"
@@ -24,7 +24,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.45"/>
     <RadioGroup
         android:id="@+id/sensitivity"
         android:layout_width="wrap_content"
@@ -33,7 +34,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="300dp" >
+        android:layout_marginTop="150dp" >
 
         <RadioButton
             android:id="@+id/lowcheck"
@@ -55,5 +56,17 @@
             android:layout_height="wrap_content"
             android:text="High Sensitivity" />
     </RadioGroup>
+
+    <ToggleButton
+        android:id="@+id/bgcheck"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textOn="Background Service Enabled"
+        android:textOff="Background Service Disabled"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="400dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
