@@ -9,8 +9,7 @@ import android.os.Bundle
 import android.hardware.SensorManager
 import android.hardware.camera2.CameraManager
 import android.view.View
-import android.widget.RadioButton
-import android.widget.TextView
+import android.widget.*
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
     private var lightsensor: Sensor ?= null
@@ -23,6 +22,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     var sens: Int = 5
     var proximity: Float ?= null
     var light: Float ?= null
+    var tglbut: ToggleButton ?= null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -33,6 +34,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         cm = getSystemService(Context.CAMERA_SERVICE) as CameraManager
         camera = cm!!.cameraIdList[0] as String
         proxsensor = sm!!.getDefaultSensor(Sensor.TYPE_PROXIMITY)
+        tglbut = findViewById(R.id.bgcheck)
     }
 
     fun refresh(view: View) {
@@ -89,6 +91,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onPause() {
         super.onPause()
+        if(tglbut!!.isChecked) {
+            startActivity(intent)
+        } else {
+            finish()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
         sm!!.unregisterListener(this)
     }
 }
