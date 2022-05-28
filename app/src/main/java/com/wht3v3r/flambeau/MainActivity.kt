@@ -1,5 +1,6 @@
 package com.wht3v3r.flambeau
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -8,8 +9,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.hardware.SensorManager
 import android.hardware.camera2.CameraManager
-import android.view.View
 import android.widget.*
+import com.google.android.material.slider.Slider
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
     private var lightsensor: Sensor ?= null
@@ -19,8 +20,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     var camera: String ?= null
     var sm: SensorManager ?= null
     private var proxsensor: Sensor ?= null
-    var sens: Int = 5
     var proximity: Float ?= null
+    var sens: Float = 10F
     var light: Float ?= null
     var tglbut: ToggleButton ?= null
 
@@ -35,24 +36,17 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         camera = cm!!.cameraIdList[0] as String
         proxsensor = sm!!.getDefaultSensor(Sensor.TYPE_PROXIMITY)
         tglbut = findViewById(R.id.bgcheck)
-    }
+        var slider: Slider = findViewById(R.id.sensitivity)
+        var sensIndicator: TextView = findViewById(R.id.textview2)
+        sensIndicator.setText("Sensitivity: " + sens.toString())
 
-    fun refresh(view: View) {
-        if (view is RadioButton) {
-            val checked = view.isChecked
-
-            when(view.id) {
-                R.id.lowcheck -> if (checked) {
-                    sens = 5
-                }
-                R.id.medcheck -> if (checked) {
-                    sens = 11
-                }
-                R.id.highcheck -> if (checked) {
-                    sens = 16
-                }
+        slider.addOnChangeListener(object: Slider.OnChangeListener {
+            @SuppressLint("RestrictedApi")
+            override fun onValueChange(slider: Slider, value: Float, fromUser: Boolean) {
+              sensIndicator.setText("Sensitivity: " + value.toString())
+                sens = value
             }
-        }
+        })
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
@@ -68,7 +62,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
 
         if(proximity == proxsensor!!.maximumRange) {
-            if(light!! < sens) {
+            if(light!! < sens!!) {
                 cm!!.setTorchMode(camera!!, true)
             } else {
                 cm!!.setTorchMode(camera!!, false)
