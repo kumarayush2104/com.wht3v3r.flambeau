@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity() {
             lightView!!.text = "Light Sensor: " + lightValue.toString()
             proximityView!!.text = "Proximity Sensor: " + proximityValue.toString()
 
-            if(lightValue <  whatsCurrentSensitivity) cameraManager!!.setTorchMode(camera!!, true)
+            if(lightValue <  whatsCurrentSensitivity  && proximityValue == proximitySensor!!.maximumRange) cameraManager!!.setTorchMode(camera!!, true)
             else cameraManager!!.setTorchMode(camera!!, false)
         }
 
