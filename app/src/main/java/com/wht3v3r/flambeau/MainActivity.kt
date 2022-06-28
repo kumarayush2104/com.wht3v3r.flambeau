@@ -1,66 +1,106 @@
 package com.wht3v3r.flambeau
 
-import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.app.NotificationManager
+import android.hardware.*
+import android.hardware.camera2.CameraManager
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.ToggleButton
-import androidx.appcompat.app.AppCompatActivity
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.material.slider.Slider
 
 class MainActivity : AppCompatActivity() {
-    var lightSensorView: TextView ?= null
-    var proximitySensorView: TextView ?= null
-    var FlambeauService: Intent ?= null
-    var sensitivitySlider: Slider ?= null
-    var sensitivityIndicator: TextView ?= null
-    var backgroundServiceToggleButton: ToggleButton ?= null
+
+    private var notiManager: NotificationManager? = null
+    private var sensorManager: SensorManager? = null
+    private var cameraManager: CameraManager? = null
+    private var proximitySensor: Sensor? = null
+    private var lightSensor: Sensor? = null
+    private var camera: String? = null
+
+    private var lightView: TextView? = null
+    private var proximityView: TextView? = null
+    private var sensController: Slider? = null
+    private var toggleButton: ToggleButton? = null
+    private var sensView: TextView? = null
+
+    private var whatsCurrentSensitivity: Float = 20F
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        lightSensorView = findViewById(R.id.lightSensor)
-        proximitySensorView = findViewById(R.id.proximitySensor)
-        FlambeauService = Intent(this, Flambeau::class.java)
-        sensitivitySlider = findViewById(R.id.sensitivitySlider)
-        sensitivityIndicator = findViewById(R.id.sensitivityValue)
-        backgroundServiceToggleButton = findViewById(R.id.backgroundServiceToggle)
 
-       LocalBroadcastManager.getInstance(this).registerReceiver( object: BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                var lightValues = intent!!.getStringExtra("Light")
-                var proximityValues = intent!!.getStringExtra("Proximity")
-                if(lightValues != null ) lightSensorView!!.setText("Light Sensor: " + lightValues.toString())
-                if(proximityValues != null ) proximitySensorView!!.setText("Proximity Sensor: " + proximityValues.toString())
-            }
-        },  IntentFilter("SensorValues"))
+        supportActionBar!!.hide()
+
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        cameraManager = getSystemService(CAMERA_SERVICE) as CameraManager
+        notiManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+        proximitySensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_PROXIMITY)
+        lightSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_LIGHT)
+        camera = cameraManager!!.cameraIdList[0]
+
+        lightView = findViewById(R.id.lightView)
+        proximityView = findViewById(R.id.proximityView)
+        sensController = findViewById(R.id.SensController)
+        toggleButton = findViewById(R.id.backgroundCheck)
+        sensView = findViewById(R.id.sensView)
+
+        sensController!!.stepSize = 0.1F
     }
 
-    override fun onResume() {
-        super.onResume()
-        sensitivitySlider!!.addOnChangeListener(object: Slider.OnChangeListener {
-            @SuppressLint("RestrictedApi")
-            override fun onValueChange(slider: Slider, value: Float, fromUser: Boolean) {
-                sensitivityIndicator!!.setText("Sensitivity: " + value.toString())
-                sendSensitivityValues(value)
-            }
+    override fun onStart() {
+        super.onStart()
+        FlambeauThread().start()
+
+        sensController!!.addOnChangeListener(Slider.OnChangeListener { _, value, _ ->
+            whatsCurrentSensitivity = value
+            sensView!!.text = "Sensitivity: " + value.toString()
         })
-        startService(FlambeauService)
+    }
+
+    inner class FlambeauThread: Thread(), SensorEventListener {
+
+        private var lightValue = lightSensor!!.maximumRange
+        private var proximityValue = proximitySensor!!.maximumRange
+
+        override fun run() {
+            super.run()
+            sensorManager!!.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
+            sensorManager!!.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_NORMAL)
+        }
+
+        override fun onSensorChanged(p0: SensorEvent?) {
+            if(p0!!.sensor.type == Sensor.TYPE_LIGHT) lightValue = p0.values[0]
+            else if(p0.sensor.type == Sensor.TYPE_PROXIMITY) proximityValue = p0.values[0]
+
+            onValueChanged()
+        }
+
+        private fun onValueChanged() {
+            lightView!!.text = "Light Sensor: " + lightValue.toString()
+            proximityView!!.text = "Proximity Sensor: " + proximityValue.toString()
+
+            if(lightValue <  whatsCurrentSensitivity) cameraManager!!.setTorchMode(camera!!, true)
+            else cameraManager!!.setTorchMode(camera!!, false)
+        }
+
+        override fun onAccuracyChanged(p0: Sensor?, p1: Int) {}
     }
 
     override fun onPause() {
         super.onPause()
-        if(!backgroundServiceToggleButton!!.isChecked) finish()
-
-    }
-    fun sendSensitivityValues(value: Float) {
-        val intent = Intent("SensitivityValues")
-        intent.putExtra("Sensitivity", value)
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+        if(!toggleButton!!.isChecked) {
+            FlambeauThread().suspend()
+            cameraManager!!.setTorchMode(camera!!, false)
+            sensorManager!!.unregisterListener(FlambeauThread())
+        }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        FlambeauThread().stop()
+        cameraManager!!.setTorchMode(camera!!, false)
+        sensorManager!!.unregisterListener(FlambeauThread())
+    }
 }

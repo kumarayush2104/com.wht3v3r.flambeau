@@ -1,66 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="40dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
     <TextView
-        android:id="@+id/lightSensor"
+        android:id="@+id/lightView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Light Sensor not Detected"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.4" />
+        android:textSize="20sp"
+        android:padding="20dp"
+        android:text="Light Sensor: " />
     <TextView
-        android:id="@+id/proximitySensor"
+        android:id="@+id/proximityView"
         android:layout_width="wrap_content"
+        android:padding="20dp"
         android:layout_height="wrap_content"
-        android:text="Proximity Sensor not Detected"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.45"/>
+        android:textSize="20sp"
+        android:text="Proximity Sensor: " />
+
     <TextView
-        android:id="@+id/sensitivityValue"
+        android:id="@+id/sensView"
         android:layout_width="wrap_content"
+        android:padding="10dp"
         android:layout_height="wrap_content"
-        android:text="Sensitivity: 10.0"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="90dp"/>
+        android:text="Sensitivity: 20.0" />
 
     <com.google.android.material.slider.Slider
-        android:id="@+id/sensitivitySlider"
-        android:layout_width="300dp"
+        android:id="@+id/SensController"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="150dp"
+        android:value="20"
         android:contentDescription="Sensitivity"
-        android:minWidth="200dp"
-        android:value="10"
-        android:valueFrom="0"
         android:valueTo="25"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:valueFrom="0"/>
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="20dp"/>
     <ToggleButton
-        android:id="@+id/backgroundServiceToggle"
+        android:id="@+id/backgroundCheck"
         android:layout_width="wrap_content"
+        android:paddingHorizontal="50dp"
         android:layout_height="wrap_content"
-        android:textOn="Background Service Enabled"
-        android:textOff="Background Service Disabled"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="400dp" />
+        android:textOn="Background Service: ON"
+        android:textOff="Background Service: OFF"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>
