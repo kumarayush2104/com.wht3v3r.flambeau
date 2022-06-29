@@ -1,5 +1,7 @@
 package com.wht3v3r.flambeau
 
+import android.app.Notification
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.hardware.*
 import android.hardware.camera2.CameraManager
@@ -7,22 +9,29 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.ToggleButton
+import androidx.core.app.NotificationCompat
 import com.google.android.material.slider.Slider
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity() {
 
-    private var notiManager: NotificationManager? = null
+    private var notificationManager: NotificationManager? = null
     private var sensorManager: SensorManager? = null
     private var cameraManager: CameraManager? = null
     private var proximitySensor: Sensor? = null
     private var lightSensor: Sensor? = null
     private var camera: String? = null
+    var executor: ExecutorService? = null
 
     private var lightView: TextView? = null
     private var proximityView: TextView? = null
     private var sensController: Slider? = null
     private var toggleButton: ToggleButton? = null
     private var sensView: TextView? = null
+
+    private var liveNotification: Notification? = null
 
     private var whatsCurrentSensitivity: Float = 20F
 
@@ -34,7 +43,9 @@ class MainActivity : AppCompatActivity() {
 
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         cameraManager = getSystemService(CAMERA_SERVICE) as CameraManager
-        notiManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        executor = Executors.newFixedThreadPool(1)
+
 
         proximitySensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_PROXIMITY)
         lightSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_LIGHT)
@@ -45,6 +56,16 @@ class MainActivity : AppCompatActivity() {
         sensController = findViewById(R.id.SensController)
         toggleButton = findViewById(R.id.backgroundCheck)
         sensView = findViewById(R.id.sensView)
+
+        val notificationChannel = NotificationChannel("default", "Flambeau Service" , NotificationManager.IMPORTANCE_HIGH)
+        notificationChannel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+        notificationChannel.setSound(null, null)
+
+        notificationManager!!.createNotificationChannel(notificationChannel)
+
+        liveNotification = NotificationCompat.Builder(this, "default").setSmallIcon(R.drawable.ic_launcher_background)
+            .setPriority(NotificationCompat.PRIORITY_HIGH).setContentTitle("Flambeau Service is still running in background").setOngoing(true).build()
+
 
         sensController!!.stepSize = 0.1F
     }
@@ -66,6 +87,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun run() {
             super.run()
+            if(this.isInterrupted) return
             sensorManager!!.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
             sensorManager!!.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_NORMAL)
         }
@@ -91,16 +113,19 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         if(!toggleButton!!.isChecked) {
-            FlambeauThread().suspend()
-            cameraManager!!.setTorchMode(camera!!, false)
-            sensorManager!!.unregisterListener(FlambeauThread())
+            exitProcess(1)
+        } else {
+            notificationManager!!.notify(1, liveNotification)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        notificationManager!!.cancelAll()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        FlambeauThread().stop()
-        cameraManager!!.setTorchMode(camera!!, false)
-        sensorManager!!.unregisterListener(FlambeauThread())
+        notificationManager!!.cancelAll()
     }
 }
